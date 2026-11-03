@@ -37,7 +37,7 @@ func (e *Exchange) AddStock(
 	}
 }
 
-func (e *Exchange) PlaceOrder(
+func (e *Exchange) CreateOrder(
 	userID int64,
 	stockCode string,
 	side OrderSide,
@@ -61,6 +61,10 @@ func (e *Exchange) PlaceOrder(
 	}
 
 	now := time.Now()
+
+	if e.nextOrderID == 0 {
+		e.nextOrderID++
+	}
 
 	order := &Order{
 		ID:                e.nextOrderID,
@@ -208,6 +212,10 @@ func (e *Exchange) executeTrade(
 		sellOrder = incoming
 	}
 
+	if e.nextTradeID == 0 {
+		e.nextTradeID++
+	}
+
 	trade := &Trade{
 		ID:          e.nextTradeID,
 		StockCode:   incoming.StockCode,
@@ -227,9 +235,9 @@ func (e *Exchange) executeTrade(
 	stock.LastTradedPrice = price
 
 	fmt.Printf(
-		"TRADE: %s | Price: $%.2f | Quantity: %d | Buy Order: %d | Sell Order: %d\n",
+		"TRADE: %s | Price: %.2f | Quantity: %d | Buy Order: %d | Sell Order: %d\n",
 		trade.StockCode,
-		float64(trade.Price)/100,
+		trade.Price,
 		trade.Quantity,
 		trade.BuyOrderID,
 		trade.SellOrderID,
@@ -296,9 +304,9 @@ func (e *Exchange) PrintOrderBook(stockCode string) {
 
 	for _, order := range book.SellOrders {
 		fmt.Printf(
-			"ID: %d | Price: $%.2f | Remaining: %d | Status: %s\n",
+			"ID: %d | Price: %.2f | Remaining: %d | Status: %s\n",
 			order.ID,
-			float64(order.Price)/100,
+			order.Price,
 			order.RemainingQuantity,
 			order.Status,
 		)
@@ -308,16 +316,16 @@ func (e *Exchange) PrintOrderBook(stockCode string) {
 
 	for _, order := range book.BuyOrders {
 		fmt.Printf(
-			"ID: %d | Price: $%.2f | Remaining: %d | Status: %s\n",
+			"ID: %d | Price: %.2f | Remaining: %d | Status: %s\n",
 			order.ID,
-			float64(order.Price)/100,
+			order.Price,
 			order.RemainingQuantity,
 			order.Status,
 		)
 	}
 
 	fmt.Printf(
-		"\nLast traded price: $%.2f\n",
-		float64(stock.LastTradedPrice)/100,
+		"\nLast traded price: %.2f\n",
+		stock.LastTradedPrice,
 	)
 }

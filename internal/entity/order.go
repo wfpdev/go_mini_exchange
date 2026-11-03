@@ -19,18 +19,26 @@ const (
 )
 
 type Order struct {
-	ID        int64
-	UserID    int64
-	StockCode string
-	Side      OrderSide
-	Price     float64
+	ID        int64     `json:"id"`
+	UserID    int64     `json:"user_id"`
+	StockCode string    `json:"stock_code"`
+	Side      OrderSide `json:"side"`
+	Price     float64   `json:"price"`
 
-	OriginalQuantity  int
-	FilledQuantity    int
-	RemainingQuantity int
+	OriginalQuantity  int `json:"original_quantity"`
+	FilledQuantity    int `json:"filled_quantity"`
+	RemainingQuantity int `json:"remaining_quantity"`
 
-	Status OrderStatus
+	Status OrderStatus `json:"status"`
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type CreateOrderRequest struct {
+	UserID    int64   `json:"user_id"`
+	StockCode string  `json:"stock_code"`
+	Side      string  `json:"side"`
+	Price     float64 `json:"price"`
+	Quantity  int     `json:"quantity"`
 }
