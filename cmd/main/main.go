@@ -17,7 +17,8 @@ func main() {
 		Trades:     make([]*entity.Trade, 0),
 	}
 
-	// Sample in-memory stock available to the REST API.
+	// Sample in-memory stock available to the system.
+	// These are examples only for my learning, not representing anything real.
 	exchange.AddStock("BBCA", "Bank Central Asia", 10000)
 	exchange.AddStock("TLKM", "Telkom Indonesia", 3000)
 	exchange.AddStock("BBRI", "Bank Rakyat Indonesia", 4800)
@@ -39,7 +40,7 @@ func main() {
 
 	marketRepository := repository.NewInMemoryMarketRepository(exchange)
 	marketUseCase := usecase.NewMarketUseCase(marketRepository)
-	marketHandler := handler.NewMarketHandler(marketUseCase)
+	marketHandler := handler.NewMarketHandler(marketUseCase, tradeUseCase)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /orders", orderHandler.GetOrders)
@@ -47,6 +48,7 @@ func main() {
 	mux.HandleFunc("GET /ticker", marketHandler.GetTicker)
 	mux.HandleFunc("GET /snapshot/ticker", marketHandler.GetTicker)
 	mux.HandleFunc("GET /snapshot/order-book", marketHandler.GetOrderBook)
+	mux.HandleFunc("GET /ws/market", marketHandler.StreamMarket)
 	mux.HandleFunc("POST /create-order", orderHandler.CreateOrder)
 
 	log.Println("mini exchange listening on :8080")
