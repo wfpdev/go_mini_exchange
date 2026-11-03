@@ -26,8 +26,13 @@ func main() {
 	createOrderUseCase := usecase.NewCreateOrderUseCase(orderRepository)
 	orderHandler := handler.NewOrderHandler(createOrderUseCase)
 
+	tradeRepository := repository.NewInMemoryTradeRepository(exchange)
+	tradeUseCase := usecase.NewTradeUseCase(tradeRepository)
+	tradeHandler := handler.NewTradeHandler(tradeUseCase)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /orders", orderHandler.GetOrders)
+	mux.HandleFunc("GET /trades", tradeHandler.GetTrades)
 	mux.HandleFunc("POST /create-order", orderHandler.CreateOrder)
 
 	log.Println("mini exchange listening on :8080")
