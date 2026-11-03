@@ -20,6 +20,13 @@ func main() {
 	// Sample in-memory stock available to the REST API.
 	exchange.AddStock("BBCA", "Bank Central Asia", 10000)
 	exchange.AddStock("TLKM", "Telkom Indonesia", 3000)
+	exchange.AddStock("BBRI", "Bank Rakyat Indonesia", 4800)
+	exchange.AddStock("BMRI", "Bank Mandiri", 6200)
+	exchange.AddStock("ASII", "Astra International", 5100)
+	exchange.AddStock("ICBP", "Indofood CBP Sukses Makmur", 11500)
+	exchange.AddStock("UNVR", "Unilever Indonesia", 2400)
+	exchange.AddStock("GOTO", "GoTo Gojek Tokopedia", 80)
+	exchange.AddStock("BBNI", "Bank Negara Indonesia", 4700)
 	exchange.AddStock("TEST", "Test Stock", 100)
 
 	orderRepository := repository.NewInMemoryOrderRepository(exchange)
@@ -30,9 +37,16 @@ func main() {
 	tradeUseCase := usecase.NewTradeUseCase(tradeRepository)
 	tradeHandler := handler.NewTradeHandler(tradeUseCase)
 
+	marketRepository := repository.NewInMemoryMarketRepository(exchange)
+	marketUseCase := usecase.NewMarketUseCase(marketRepository)
+	marketHandler := handler.NewMarketHandler(marketUseCase)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /orders", orderHandler.GetOrders)
 	mux.HandleFunc("GET /trades", tradeHandler.GetTrades)
+	mux.HandleFunc("GET /ticker", marketHandler.GetTicker)
+	mux.HandleFunc("GET /snapshot/ticker", marketHandler.GetTicker)
+	mux.HandleFunc("GET /snapshot/order-book", marketHandler.GetOrderBook)
 	mux.HandleFunc("POST /create-order", orderHandler.CreateOrder)
 
 	log.Println("mini exchange listening on :8080")

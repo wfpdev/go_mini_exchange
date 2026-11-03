@@ -28,6 +28,7 @@ func (e *Exchange) AddStock(
 	e.Stocks[code] = &Stock{
 		Code:            code,
 		Name:            name,
+		InitialPrice:    initialPrice,
 		LastTradedPrice: initialPrice,
 	}
 
@@ -44,7 +45,6 @@ func (e *Exchange) CreateOrder(
 	price float64,
 	quantity int,
 ) (*Order, error) {
-
 	// Validate stock
 	if _, exists := e.Stocks[stockCode]; !exists {
 		return nil, errors.New("stock not found")
