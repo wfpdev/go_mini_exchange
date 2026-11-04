@@ -38,7 +38,7 @@ func (e *Exchange) AddStock(
 	}
 }
 
-func (e *Exchange) CreatePendingOrder(
+func (e *Exchange) CreateOrder(
 	userID int64,
 	stockCode string,
 	side OrderSide,
@@ -85,7 +85,7 @@ func (e *Exchange) CreatePendingOrder(
 	return order, nil
 }
 
-func (e *Exchange) ProcessPendingOrder(order *Order) {
+func (e *Exchange) ProcessOrder(order *Order) {
 	book := e.OrderBooks[order.StockCode]
 
 	e.matchOrder(book, order)

@@ -74,6 +74,6 @@ func NewOrderConsumerHandler(orderUseCase usecase.OrderUseCase) *OrderConsumerHa
 }
 
 func (h *OrderConsumerHandler) HandleCreateOrder(orderID int64) error {
-	_, err := h.orderUseCase.ProcessPendingOrder(orderID)
+	_, err := h.orderUseCase.ProcessOrder(orderID)
 	return err
 }

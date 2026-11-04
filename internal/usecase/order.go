@@ -16,7 +16,7 @@ import (
 
 type OrderUseCase interface {
 	CreateOrder(request entity.CreateOrderRequest) (*entity.Order, error)
-	ProcessPendingOrder(orderID int64) (*entity.Order, error)
+	ProcessOrder(orderID int64) (*entity.Order, error)
 	GetOrders(userID *int64, stockCode string, status string) []*entity.Order
 }
 
@@ -55,7 +55,7 @@ func (uc *orderUseCase) CreateOrder(request entity.CreateOrderRequest) (*entity.
 		}
 	}
 
-	order, err := uc.repository.CreatePendingOrder(
+	order, err := uc.repository.CreateOrder(
 		request.UserID,
 		strings.ToUpper(strings.TrimSpace(request.StockCode)),
 		entity.OrderSide(strings.ToUpper(strings.TrimSpace(request.Side))),
@@ -88,15 +88,12 @@ func createOrderIdempotencyKey(request entity.CreateOrderRequest) (string, error
 	return fmt.Sprintf("create-order:%x", sum), nil
 }
 
-func (uc *orderUseCase) ProcessPendingOrder(orderID int64) (*entity.Order, error) {
-	return uc.repository.ProcessPendingOrder(orderID)
+func (uc *orderUseCase) ProcessOrder(orderID int64) (*entity.Order, error) {
+	return uc.repository.ProcessOrder(orderID)
 }
 
 func (uc *orderUseCase) GetOrders(userID *int64, stockCode string, status string) []*entity.Order {
 	status = strings.ToUpper(strings.TrimSpace(status))
-	status = strings.ReplaceAll(status, "-", "_")
-	status = strings.ReplaceAll(status, " ", "_")
-
 	return uc.repository.GetOrders(
 		userID,
 		strings.ToUpper(strings.TrimSpace(stockCode)),

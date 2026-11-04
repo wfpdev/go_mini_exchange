@@ -72,7 +72,7 @@ func main() {
 	mux.HandleFunc("GET /ws/market", marketHandler.StreamMarket)
 	mux.HandleFunc("POST /create-order", orderHandler.CreateOrder)
 
-	log.Println("mini exchange listening on :8080")
+	log.Println("mini exchange is starting on :8080")
 	if err := http.ListenAndServe(":8080", mux); err != nil {
 		log.Fatal(err)
 	}

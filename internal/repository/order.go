@@ -9,8 +9,8 @@ import (
 )
 
 type OrderRepository interface {
-	CreatePendingOrder(userID int64, stockCode string, side entity.OrderSide, price float64, quantity int) (*entity.Order, error)
-	ProcessPendingOrder(orderID int64) (*entity.Order, error)
+	CreateOrder(userID int64, stockCode string, side entity.OrderSide, price float64, quantity int) (*entity.Order, error)
+	ProcessOrder(orderID int64) (*entity.Order, error)
 	GetOrders(userID *int64, stockCode string, status entity.OrderStatus) []*entity.Order
 }
 
@@ -27,11 +27,11 @@ func NewInMemoryOrderRepository(exchange *entity.Exchange) *InMemoryOrderReposit
 	}
 }
 
-func (r *InMemoryOrderRepository) CreatePendingOrder(userID int64, stockCode string, side entity.OrderSide, price float64, quantity int) (*entity.Order, error) {
+func (r *InMemoryOrderRepository) CreateOrder(userID int64, stockCode string, side entity.OrderSide, price float64, quantity int) (*entity.Order, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	order, err := r.exchange.CreatePendingOrder(userID, stockCode, side, price, quantity)
+	order, err := r.exchange.CreateOrder(userID, stockCode, side, price, quantity)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +40,7 @@ func (r *InMemoryOrderRepository) CreatePendingOrder(userID int64, stockCode str
 	return order, nil
 }
 
-func (r *InMemoryOrderRepository) ProcessPendingOrder(orderID int64) (*entity.Order, error) {
+func (r *InMemoryOrderRepository) ProcessOrder(orderID int64) (*entity.Order, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -52,7 +52,7 @@ func (r *InMemoryOrderRepository) ProcessPendingOrder(orderID int64) (*entity.Or
 			return order, nil
 		}
 
-		r.exchange.ProcessPendingOrder(order)
+		r.exchange.ProcessOrder(order)
 		return order, nil
 	}
 
