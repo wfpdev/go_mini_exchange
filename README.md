@@ -77,3 +77,9 @@ GET http://localhost:8080/snapshot/ticker?stock_code=TEST
 <h5>Snapshot Order Book</h5>
 
 GET http://localhost:8080/snapshot/order-book?stock_code=TEST
+
+<h3>WS Documentation</h3>
+
+[Postman link for WS](https://www.postman.com/wfpdev-team/workspace/wfpdev-public-workspace/collection/6ae9e5d9ef6a85826c6c8f2c?action=share&creator=57224783)
+
+http://localhost:8080/ws/market?stock_code=TEST&topics=market.ticker,market.trade
