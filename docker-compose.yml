@@ -1,4 +1,16 @@
 services:
+  simulator:
+    build:
+      context: ./scripts
+      dockerfile: Dockerfile
+    environment:
+      API_URL: http://app:8080/create-order
+      INTERVAL_SECONDS: "1"
+      START_USER_ID: "1000"
+    depends_on:
+      - app
+    restart: unless-stopped
+
   app:
     build:
       context: .
