@@ -64,3 +64,16 @@ func writeError(w http.ResponseWriter, status int, message string) {
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(map[string]string{"error": message})
 }
+
+type OrderConsumerHandler struct {
+	orderUseCase usecase.OrderUseCase
+}
+
+func NewOrderConsumerHandler(orderUseCase usecase.OrderUseCase) *OrderConsumerHandler {
+	return &OrderConsumerHandler{orderUseCase: orderUseCase}
+}
+
+func (h *OrderConsumerHandler) HandleCreateOrder(orderID int64) error {
+	_, err := h.orderUseCase.ProcessPendingOrder(orderID)
+	return err
+}

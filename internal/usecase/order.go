@@ -16,6 +16,7 @@ import (
 
 type OrderUseCase interface {
 	CreateOrder(request entity.CreateOrderRequest) (*entity.Order, error)
+	ProcessPendingOrder(orderID int64) (*entity.Order, error)
 	GetOrders(userID *int64, stockCode string, status string) []*entity.Order
 }
 
@@ -85,6 +86,10 @@ func createOrderIdempotencyKey(request entity.CreateOrderRequest) (string, error
 
 	sum := sha256.Sum256(body)
 	return fmt.Sprintf("create-order:%x", sum), nil
+}
+
+func (uc *orderUseCase) ProcessPendingOrder(orderID int64) (*entity.Order, error) {
+	return uc.repository.ProcessPendingOrder(orderID)
 }
 
 func (uc *orderUseCase) GetOrders(userID *int64, stockCode string, status string) []*entity.Order {

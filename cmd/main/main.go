@@ -48,14 +48,12 @@ func main() {
 	orderPublisher := messaging.NewKafkaOrderPublisher(brokers, topic)
 	defer orderPublisher.Close()
 
-	orderConsumer := messaging.StartKafkaOrderConsumer(brokers, topic, func(orderID int64) error {
-		_, err := orderRepository.ProcessPendingOrder(orderID)
-		return err
-	})
-	defer orderConsumer.Close()
+	orderUseCase := usecase.NewCreateOrderUseCase(orderRepository, orderPublisher)
+	orderHandler := handler.NewOrderHandler(orderUseCase)
+	orderConsumerHandler := handler.NewOrderConsumerHandler(orderUseCase)
 
-	createOrderUseCase := usecase.NewCreateOrderUseCase(orderRepository, orderPublisher)
-	orderHandler := handler.NewOrderHandler(createOrderUseCase)
+	orderConsumer := messaging.StartKafkaOrderConsumer(brokers, topic, orderConsumerHandler.HandleCreateOrder)
+	defer orderConsumer.Close()
 
 	tradeRepository := repository.NewInMemoryTradeRepository(exchange)
 	tradeUseCase := usecase.NewTradeUseCase(tradeRepository)
