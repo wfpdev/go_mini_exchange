@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"strings"
 	"sync"
 
@@ -8,7 +9,8 @@ import (
 )
 
 type OrderRepository interface {
-	CreateOrder(userID int64, stockCode string, side entity.OrderSide, price float64, quantity int) (*entity.Order, error)
+	CreatePendingOrder(userID int64, stockCode string, side entity.OrderSide, price float64, quantity int) (*entity.Order, error)
+	ProcessPendingOrder(orderID int64) (*entity.Order, error)
 	GetOrders(userID *int64, stockCode string, status entity.OrderStatus) []*entity.Order
 }
 
@@ -25,17 +27,36 @@ func NewInMemoryOrderRepository(exchange *entity.Exchange) *InMemoryOrderReposit
 	}
 }
 
-func (r *InMemoryOrderRepository) CreateOrder(userID int64, stockCode string, side entity.OrderSide, price float64, quantity int) (*entity.Order, error) {
+func (r *InMemoryOrderRepository) CreatePendingOrder(userID int64, stockCode string, side entity.OrderSide, price float64, quantity int) (*entity.Order, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	order, err := r.exchange.CreateOrder(userID, stockCode, side, price, quantity)
+	order, err := r.exchange.CreatePendingOrder(userID, stockCode, side, price, quantity)
 	if err != nil {
 		return nil, err
 	}
 
 	r.orders = append(r.orders, order)
 	return order, nil
+}
+
+func (r *InMemoryOrderRepository) ProcessPendingOrder(orderID int64) (*entity.Order, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	for _, order := range r.orders {
+		if order.ID != orderID {
+			continue
+		}
+		if order.Status != entity.Pending {
+			return order, nil
+		}
+
+		r.exchange.ProcessPendingOrder(order)
+		return order, nil
+	}
+
+	return nil, errors.New("order not found")
 }
 
 func (r *InMemoryOrderRepository) GetOrders(userID *int64, stockCode string, status entity.OrderStatus) []*entity.Order {

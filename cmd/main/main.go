@@ -3,9 +3,12 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/wfpdev/go_mini_exchange/internal/entity"
 	"github.com/wfpdev/go_mini_exchange/internal/handler"
+	"github.com/wfpdev/go_mini_exchange/internal/messaging"
 	"github.com/wfpdev/go_mini_exchange/internal/repository"
 	"github.com/wfpdev/go_mini_exchange/internal/usecase"
 )
@@ -31,7 +34,27 @@ func main() {
 	exchange.AddStock("TEST", "Test Stock", 100)
 
 	orderRepository := repository.NewInMemoryOrderRepository(exchange)
-	createOrderUseCase := usecase.NewCreateOrderUseCase(orderRepository)
+
+	brokerValue := os.Getenv("KAFKA_BROKERS")
+	if brokerValue == "" {
+		brokerValue = "localhost:9092"
+	}
+	brokers := strings.Split(brokerValue, ",")
+	topic := os.Getenv("KAFKA_ORDER_TOPIC")
+	if topic == "" {
+		topic = messaging.OrderTopic
+	}
+
+	orderPublisher := messaging.NewKafkaOrderPublisher(brokers, topic)
+	defer orderPublisher.Close()
+
+	orderConsumer := messaging.StartKafkaOrderConsumer(brokers, topic, func(orderID int64) error {
+		_, err := orderRepository.ProcessPendingOrder(orderID)
+		return err
+	})
+	defer orderConsumer.Close()
+
+	createOrderUseCase := usecase.NewCreateOrderUseCase(orderRepository, orderPublisher)
 	orderHandler := handler.NewOrderHandler(createOrderUseCase)
 
 	tradeRepository := repository.NewInMemoryTradeRepository(exchange)

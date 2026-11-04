@@ -10,6 +10,7 @@ import (
 
 	"github.com/patrickmn/go-cache"
 	"github.com/wfpdev/go_mini_exchange/internal/entity"
+	"github.com/wfpdev/go_mini_exchange/internal/messaging"
 	"github.com/wfpdev/go_mini_exchange/internal/repository"
 )
 
@@ -21,13 +22,19 @@ type OrderUseCase interface {
 type orderUseCase struct {
 	repository repository.OrderRepository
 	cache      *cache.Cache
+	publisher  messaging.KafkaOrderPublisher
 	mutex      sync.Mutex
 }
 
-func NewCreateOrderUseCase(repository repository.OrderRepository) OrderUseCase {
+func NewCreateOrderUseCase(repository repository.OrderRepository, publishers ...messaging.KafkaOrderPublisher) OrderUseCase {
+	var publisher messaging.KafkaOrderPublisher
+	if len(publishers) > 0 {
+		publisher = publishers[0]
+	}
 	return &orderUseCase{
 		repository: repository,
-		cache:      cache.New(1*time.Minute, 5*time.Minute),
+		cache:      cache.New(3*time.Minute, 10*time.Minute),
+		publisher:  publisher,
 	}
 }
 
@@ -42,11 +49,12 @@ func (uc *orderUseCase) CreateOrder(request entity.CreateOrderRequest) (*entity.
 
 	if cached, found := uc.cache.Get(key); found {
 		if order, ok := cached.(*entity.Order); ok {
-			return order, nil
+			cachedOrder := *order
+			return &cachedOrder, nil
 		}
 	}
 
-	order, err := uc.repository.CreateOrder(
+	order, err := uc.repository.CreatePendingOrder(
 		request.UserID,
 		strings.ToUpper(strings.TrimSpace(request.StockCode)),
 		entity.OrderSide(strings.ToUpper(strings.TrimSpace(request.Side))),
@@ -57,8 +65,16 @@ func (uc *orderUseCase) CreateOrder(request entity.CreateOrderRequest) (*entity.
 		return nil, err
 	}
 
-	uc.cache.Set(key, order, cache.DefaultExpiration)
-	return order, nil
+	pendingOrder := *order
+
+	if uc.publisher != nil {
+		if err := uc.publisher.Publish(order.ID); err != nil {
+			return nil, fmt.Errorf("publish create order event: %w", err)
+		}
+	}
+
+	uc.cache.Set(key, &pendingOrder, cache.DefaultExpiration)
+	return &pendingOrder, nil
 }
 
 func createOrderIdempotencyKey(request entity.CreateOrderRequest) (string, error) {

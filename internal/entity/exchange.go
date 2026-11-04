@@ -38,7 +38,7 @@ func (e *Exchange) AddStock(
 	}
 }
 
-func (e *Exchange) CreateOrder(
+func (e *Exchange) CreatePendingOrder(
 	userID int64,
 	stockCode string,
 	side OrderSide,
@@ -82,18 +82,21 @@ func (e *Exchange) CreateOrder(
 
 	e.nextOrderID++
 
-	book := e.OrderBooks[stockCode]
+	return order, nil
+}
 
-	// Match incoming order against existing orders
+func (e *Exchange) ProcessPendingOrder(order *Order) {
+	book := e.OrderBooks[order.StockCode]
+
 	e.matchOrder(book, order)
 
-	// Add remaining quantity to the order book
-	if order.RemainingQuantity > 0 {
+	if order.RemainingQuantity > 0 && order.Status != PartiallyFilled {
 		order.Status = Open
+	}
+	if order.RemainingQuantity > 0 {
 		e.addToOrderBook(book, order)
 	}
-
-	return order, nil
+	order.UpdatedAt = time.Now()
 }
 
 func (e *Exchange) matchOrder(
