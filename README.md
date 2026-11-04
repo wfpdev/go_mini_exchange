@@ -6,7 +6,7 @@
 
 <h3>How To Run</h3>
 
-Simply run using `docker compose up` command. Then `docker compose down` to turn it off.
+Simply run using `docker compose up --build` command. Then `docker compose down` to turn it off.
 
 Containers included:
 - Golang app (http://localhost:8080)
@@ -18,9 +18,20 @@ Containers included:
 
 <img width="471" height="262" src="https://github.com/user-attachments/assets/a41c7504-e0be-4aa0-a3aa-5c62c31805b4" />
 
+- Horizontal Scaling for the application can be done using CPU / Memory threshold mechanism. So for example, if an app instance is already reaching 80% CPU then it will autoscale. 
+
 <h3>Flow Diagram</h3>
 
 <img width="822" height="582" src="https://github.com/user-attachments/assets/84f0e86e-a50c-4684-bf5a-64f1cf44a73f" />
+
+- Create Order is protected from duplication using idempotency Keys. The key is constructed from the payload request and stored to In-Memory Cache for 1 min TTL. This should prevent any duplication from accident such as resubmission.
+- Matching Engine is protected from race condition using mutex.
+- Matching Engine is backed using Kafka, allowing guarantee ordering and retry-on-failure mechanism.
+
+<h3>Realtime Price Simulation</h3>
+
+The Docker Compose include a Python container made from `scripts` folder. When server is up, the script will act as a bot that performs transactions against the system.
+The user id used is starting from 1000 above. When docker compose is up, you can use the provided [WS Postman link](https://www.postman.com/wfpdev-team/workspace/wfpdev-public-workspace/collection/6ae9e5d9ef6a85826c6c8f2c?action=share&source=copy-link&creator=57224783) and connect as many as you want. Then wait until the queried stock code received some broadcasts.
 
 <h3>System Assumption / Setup</h3>
 
