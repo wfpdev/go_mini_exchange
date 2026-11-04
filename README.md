@@ -42,3 +42,38 @@ Each of client WebSocket connection is [handled in separate goroutine](https://g
 - Too many orders that may end up flooding Kafka topic. One possible solution is a rate limiter.
 - Idempotency keys stored using in-memory cache may end up degrading system performance. One possible solution is to move to Redis.
 - Ideally business entities should be stored in database with separate Writer and Reader instances so that read-heavy traffic can be controlled.
+
+<h3>API Documentation</h3>
+
+[Postman link for REST API](https://www.postman.com/wfpdev-team/workspace/wfpdev-public-workspace/collection/57224783-68b178e7-e340-49f0-bd45-2833c8e9d608?action=share&creator=57224783)
+
+<h5>Create Order</h5>
+
+POST http://localhost:8080/create-order
+```json
+{
+    "user_id": 123,
+    "stock_code": "TEST", // listed in cmd/main.go
+    "side": "BUY", //BUY or SELL
+    "price": 10000,
+    "quantity": 10
+}
+```
+
+<h5>Get Orders</h5>
+
+GET http://localhost:8080/orders?stock_code=TEST&status=OPEN&user_id=1012
+
+status list: PENDING, OPEN, PARTIALLY_FILLED, FILLED
+
+<h5>Get Trades</h5>
+
+GET http://localhost:8080/trades?stock_code=TEST
+
+<h5>Snapshot Ticker</h5>
+
+GET http://localhost:8080/snapshot/ticker?stock_code=TEST
+
+<h5>Snapshot Order Book</h5>
+
+GET http://localhost:8080/snapshot/order-book?stock_code=TEST
