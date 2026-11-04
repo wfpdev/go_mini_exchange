@@ -83,3 +83,15 @@ GET http://localhost:8080/snapshot/order-book?stock_code=TEST
 [Postman link for WS](https://www.postman.com/wfpdev-team/workspace/wfpdev-public-workspace/collection/6ae9e5d9ef6a85826c6c8f2c?action=share&creator=57224783)
 
 http://localhost:8080/ws/market?stock_code=TEST&topics=market.ticker,market.trade
+
+market.ticker -> last price per stock
+example broadcast:
+```json
+{"data":{"stock_code":"BBCA","name":"Bank Central Asia","last_price":10002.52,"change":2.5200000000004366,"change_percent":0.025200000000004365,"volume":210},"topic":"market.ticker"}
+```
+
+market.trade -> trade stream per stock
+example broadcast:
+```json
+{"data":{"id":8,"stock_code":"BBCA","buy_order_id":15,"sell_order_id":16,"price":10017.73,"quantity":59,"executed_at":"2026-11-04T13:43:07.590537246Z"},"topic":"market.trade"}
+```
