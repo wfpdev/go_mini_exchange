@@ -34,7 +34,7 @@ func NewCreateOrderUseCase(repository repository.OrderRepository, publishers ...
 	}
 	return &orderUseCase{
 		repository: repository,
-		cache:      cache.New(3*time.Minute, 10*time.Minute),
+		cache:      cache.New(1*time.Minute, 5*time.Minute),
 		publisher:  publisher,
 	}
 }
