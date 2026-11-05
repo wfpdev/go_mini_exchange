@@ -26,7 +26,7 @@ Containers included:
 
 - Create Order is protected from duplication using [idempotency Keys](https://github.com/wfpdev/go_mini_exchange/blob/175dab99303d5b85bcf950f30861d15071605394/internal/usecase/order.go#L43-L46). The key is constructed from the payload request and stored to In-Memory Cache for 1 min TTL. This should prevent any duplication from accident such as resubmission.
 - Matching Engine is protected from race condition [using mutex](https://github.com/wfpdev/go_mini_exchange/blob/175dab99303d5b85bcf950f30861d15071605394/internal/repository/order.go#L44-L45).
-- Matching Engine is backed using Kafka, allowing guarantee ordering and retry-on-failure mechanism.
+- Matching Engine is backed [using Kafka](https://github.com/wfpdev/go_mini_exchange/blob/54b77c9ca971a177ab51b8b95e3ffcc577a62590/internal/messaging/kafka.go#L68-L75), allowing guarantee ordering and retry-on-failure mechanism.
 - In the concurrency implementation for the WS API, goroutine leak is prevented by appropriately [closing done channel](https://github.com/wfpdev/go_mini_exchange/blob/175dab99303d5b85bcf950f30861d15071605394/internal/handler/market.go#L107).
 
 <h3>Realtime Price Simulation</h3>
@@ -43,7 +43,7 @@ The user id used is starting from 1000 above. When docker compose is up, you can
 <h3>Race Condition</h3>
 
 Because of using memory variables, the system is prone to race condition. For example, upon multiple create order requests at the same time.
-The system has put the necessary mutex to mitigate it.
+The system has put the necessary [mutex](https://github.com/wfpdev/go_mini_exchange/blob/54b77c9ca971a177ab51b8b95e3ffcc577a62590/internal/repository/order.go#L31-L32) to mitigate it.
 
 <h3>WS Broadcast</h3>
 
