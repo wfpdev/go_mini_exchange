@@ -24,9 +24,10 @@ Containers included:
 
 <img width="822" height="582" src="https://github.com/user-attachments/assets/84f0e86e-a50c-4684-bf5a-64f1cf44a73f" />
 
-- Create Order is protected from duplication using idempotency Keys. The key is constructed from the payload request and stored to In-Memory Cache for 1 min TTL. This should prevent any duplication from accident such as resubmission.
-- Matching Engine is protected from race condition using mutex.
+- Create Order is protected from duplication using [idempotency Keys](https://github.com/wfpdev/go_mini_exchange/blob/175dab99303d5b85bcf950f30861d15071605394/internal/usecase/order.go#L43-L46). The key is constructed from the payload request and stored to In-Memory Cache for 1 min TTL. This should prevent any duplication from accident such as resubmission.
+- Matching Engine is protected from race condition [using mutex](https://github.com/wfpdev/go_mini_exchange/blob/175dab99303d5b85bcf950f30861d15071605394/internal/repository/order.go#L44-L45).
 - Matching Engine is backed using Kafka, allowing guarantee ordering and retry-on-failure mechanism.
+- In the concurrency implementation for the WS API, goroutine leak is prevented by appropriately [closing done channel](https://github.com/wfpdev/go_mini_exchange/blob/175dab99303d5b85bcf950f30861d15071605394/internal/handler/market.go#L107).
 
 <h3>Realtime Price Simulation</h3>
 
